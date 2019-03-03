@@ -1,0 +1,43 @@
+{
+  "name": "jms-connect",
+  "version": "1.0.0",
+  "description": "Connect servers managed by Jumpserver using traditional terminal",
+  "main": "index.js",
+  "bin": {
+    "jms-connect": "./src/cli.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/living42/jms-connect.git"
+  },
+  "keywords": [
+    "terminal",
+    "Jumpserver"
+  ],
+  "author": "living42",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/living42/jms-connect/issues"
+  },
+  "homepage": "https://github.com/living42/jms-connect#readme",
+  "devDependencies": {
+    "@types/node": "^11.10.4",
+    "tslint": "^5.13.1",
+    "typescript": "^3.3.3333"
+  },
+  "dependencies": {
+    "@3846masa/axios-cookiejar-support": "^0.4.2",
+    "@types/socket.io-client": "^1.4.32",
+    "@types/uuid-js": "^0.7.2",
+    "axios": "^0.18.0",
+    "socket.io-client": "^2.2.0",
+    "ts-node": "^8.0.2",
+    "uuid-js": "^0.7.5"
+  }
+}
