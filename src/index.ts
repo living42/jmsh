@@ -1,34 +1,7 @@
-/**
- * # Stage 1
- *
- * - Login (2FA)
- * - Establish socketio connection
- * - Get Servers
- * - Connect Server
- * - Create a terminal
- *
- * ## Stage 2
- *
- * - Load config and session
- * - Login if no session of session is expired
- *   - save session
- * - Establish socketio connection
- * - Get Servers
- * - Connect Server
- * - Create a terminal
- *
- * ## Stage 3
- *
- * - Load config and session
- * - Try connect agent
- *   - Start a agent
- *   - Login
- *   - Establish socketio connection
- *   - Bind a unixsock wait for server connection request
- * - Ask agent to connect to server
- * - Create a terminal
- * - If this is last server connect then agent will exit
- */
+import fs from "fs";
+import inquirer from "inquirer";
+import os from "os";
+import path from "path";
 import io from "socket.io-client";
 import { CookieJar } from "tough-cookie";
 import { URLSearchParams } from "url";
@@ -46,10 +19,52 @@ class Term {
   }
 
   public async login() {
+    const answers = await inquirer.prompt<{username: string, password: string}>([
+      {name: "username"},
+      {name: "password", type: "password"},
+    ]);
+
+    const {username, password} = answers;
+
+    if (!username || !password) {
+      console.error("Please enter username and password to login");
+      process.exit(1);
+    }
+
+    const form = new URLSearchParams();
+    form.append("username", username);
+    form.append("password", password);
+
     const resp = await http.get(`${this.url}/users/login/`);
 
-    const m = /<input type="hidden" name="csrfmiddlewaretoken" value="(\w+)">/.exec(resp.data);
-    if (!m) {
+    const m1 = /<img src="(.*)" alt="captcha" class="captcha"/.exec(resp.data);
+    if (m1) {
+      const m = /name="captcha_0" type="hidden" value="(\w+)"/.exec(resp.data);
+      if (!m) {
+        console.error("Connot find captcha info");
+        process.exit(1);
+      } else {
+        const captchaId = m[1];
+        form.append("captcha_0", captchaId);
+      }
+      const url = m1[1];
+      const resp2 = await http.get(`${this.url}${url}`, {responseType: "stream"});
+      const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "jms-connect"));
+      const filePath = `${tmpDir}/1.png`;
+      resp2.data.pipe(fs.createWriteStream(filePath));
+
+      console.log(`Captcha founded, please interpret it: file://${filePath}`);
+      const {captcha} = await inquirer.prompt<{captcha: string}>({
+        name: "captcha",
+      });
+      form.append("captcha_1", captcha);
+
+      fs.unlinkSync(filePath);
+      fs.rmdirSync(tmpDir);
+    }
+
+    const m2 = /<input type="hidden" name="csrfmiddlewaretoken" value="(\w+)">/.exec(resp.data);
+    if (!m2) {
       console.error("Cannot find csrfmiddlewaretoken.");
       process.exit(1);
       return;
@@ -58,16 +73,40 @@ class Term {
     const csrfToken = cookieGetValue(http.cookies, this.url, "csrftoken");
 
     this.csrftoken = csrfToken;
-
-    const form = new URLSearchParams();
     form.append("csrfmiddlewaretoken", csrfToken);
-    form.append("username", "admin");
-    form.append("password", "admin");
+
     const loginResp = await http.post(`${this.url}/users/login/`, form, {maxRedirects: 0});
     if (loginResp.status !== 302) {
       console.error("Failed to login: please check you username and password");
       process.exit(1);
     }
+
+    if (loginResp.headers.location === "/users/login/otp/") {
+      const form2 = new URLSearchParams();
+
+      const resp4 = await http.get(`${this.url}/users/login/otp/`);
+      const m3 = /<input type="hidden" name="csrfmiddlewaretoken" value="(\w+)">/.exec(resp4.data);
+      if (!m3) {
+        console.error("Cannot find csrfmiddlewaretoken.");
+        process.exit(1);
+        return;
+      }
+      this.csrftoken = cookieGetValue(http.cookies, this.url, "csrftoken");
+      form.append("csrfmiddlewaretoken", this.csrftoken);
+
+      const {otpCode} = await inquirer.prompt<{otpCode: string}>({
+        name: "otpCode", message: "2FA Code:",
+      });
+      form2.append("csrfmiddlewaretoken", csrfToken);
+      form2.append("otp_code", otpCode);
+
+      const resp3 = await http.post(`${this.url}/users/login/otp/`, form2, {maxRedirects: 0});
+      if (resp3.status !== 302) {
+        console.error("Failed to login: please check you 2FA Code is correct");
+        process.exit(1);
+      }
+    }
+
     const sessionId = cookieGetValue(http.cookies, this.url, "sessionid");
 
     this.sessionId = sessionId;
@@ -89,9 +128,9 @@ class Term {
     this.socket = socket;
   }
 
-  public async connect(name: string) {
-    const asset = (await this.getAssets())
-      .filter((node) => node.meta.type === "asset" && node.name === name)[0];
+  public async connect(asset: ITreeNode) {
+  // NOTE inquirer altered stdin we should resume it
+    process.stdin.resume();
 
     const secret = UUID.create().toString();
 
@@ -136,21 +175,8 @@ class Term {
     });
   }
 
-  protected async getAssets() {
+  public async getAssets() {
     const resp2 = await http.get(`${this.url}/api/perms/v1/user/nodes-assets/tree/`);
-
-    interface IAssetSystemUser {
-      id: string;
-    }
-    interface ITreeNodeMeta {
-      type: "node" | "asset";
-      system_users: IAssetSystemUser[];
-    }
-    interface ITreeNode {
-      id: string;
-      meta: ITreeNodeMeta;
-      name: string;
-    }
     return resp2.data as ITreeNode[];
   }
 
@@ -178,14 +204,38 @@ class Term {
 
 export async function run() {
   const nodeName = process.argv[2];
-  if (!nodeName) {
-    console.error("Please specify server name to connect");
-    process.exit(1);
-  }
-  const term = new Term("http://localhost:8080");
+
+  const {serverUrl} = await inquirer.prompt<{serverUrl: string}>({
+    name: "serverUrl",
+    message: "set your jumpserver:",
+    default: "http://localhost:8080",
+  });
+
+  const term = new Term(serverUrl);
   await term.login();
   await term.establishConnection();
-  await term.connect(nodeName);
+
+  const assets = (await term.getAssets()).filter((node) => node.meta.type === "asset");
+
+  let asset;
+  if (!nodeName) {
+    const answer = await inquirer.prompt<{asset: ITreeNode}>({
+      type: "list",
+      name: "asset",
+      message: "choose asset to connect:",
+      choices: assets.map((x) => ({name: x.name, value: x})),
+    });
+    asset = answer.asset;
+  } else {
+    asset = assets.filter((node) => node.name === nodeName)[0];
+  }
+
+  if (!asset) {
+    console.error("asset you specified no found");
+    process.exit(1);
+  }
+
+  await term.connect(asset);
 }
 
 function cookieGetValue(jar: CookieJar, currentUrl: string, name: string): string {
@@ -195,4 +245,17 @@ function cookieGetValue(jar: CookieJar, currentUrl: string, name: string): strin
   } else {
     throw new Error(`${name} not found`);
   }
+}
+
+interface IAssetSystemUser {
+  id: string;
+}
+interface ITreeNodeMeta {
+  type: "node" | "asset";
+  system_users: IAssetSystemUser[];
+}
+interface ITreeNode {
+  id: string;
+  meta: ITreeNodeMeta;
+  name: string;
 }

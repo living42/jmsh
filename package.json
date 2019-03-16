@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/living42/jms-connect#readme",
   "devDependencies": {
+    "@types/inquirer": "0.0.44",
     "@types/node": "^11.10.4",
     "tslint": "^5.13.1",
     "typescript": "^3.3.3333"
@@ -36,6 +37,7 @@
     "@types/socket.io-client": "^1.4.32",
     "@types/uuid-js": "^0.7.2",
     "axios": "^0.18.0",
+    "inquirer": "^6.2.2",
     "socket.io-client": "^2.2.0",
     "ts-node": "^8.0.2",
     "uuid-js": "^0.7.5"
