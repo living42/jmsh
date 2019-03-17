@@ -167,6 +167,12 @@ class Term {
       socket.emit("data", {data: chunk.toString(), room: room});
     });
 
+    process.stdout.on("resize",  () => {
+      socket.emit("resize", {
+        cols: process.stdout.columns, rows: process.stdout.rows
+      });
+    });
+
     socket.on("logout", (data: any) => {
       if (data.room === room) {
         setRawMode(false);
