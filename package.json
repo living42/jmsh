@@ -4,7 +4,7 @@
   "description": "Connect servers managed by Jumpserver using traditional terminal",
   "main": "index.js",
   "bin": {
-    "jms-connect": "./dist/cli.js"
+    "jmsh": "./dist/cli.js"
   },
   "directories": {
     "test": "test"
