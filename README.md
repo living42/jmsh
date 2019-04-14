@@ -9,3 +9,14 @@ npm install -g jms-connect
 
 jms-connect
 ```
+
+
+## Development
+
+```
+npm install
+npm link
+
+# run the command
+jms-connect
+```
