@@ -2,7 +2,7 @@ import inquirer from 'inquirer'
 import Term, { ITreeNode } from './term'
 
 export async function main() {
-    console.log('jms-connect 1.0')
+    console.log('jmsh 1.0')
     const nodeName = process.argv[2]
 
     const { serverUrl } = await inquirer.prompt<{ serverUrl: string }>({

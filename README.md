@@ -5,9 +5,9 @@ Connect servers managed by Jumpserver using traditional terminal
 ## Usage
 
 ```
-npm install -g jms-connect
+npm install -g jmsh
 
-jms-connect
+jmsh
 ```
 
 
@@ -18,5 +18,5 @@ npm install
 npm link
 
 # run the command
-jms-connect
+jmsh
 ```
