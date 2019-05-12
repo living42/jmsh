@@ -9,7 +9,7 @@ import * as rpc from './rpc'
 import inquirer from 'inquirer'
 import child_process from 'child_process'
 
-const VERSION = '1.0.1'
+const VERSION = '1.0.2'
 
 interface Config {
   endpoint: string
