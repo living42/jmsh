@@ -2,7 +2,7 @@ language: node_js
 node_js:
 - stable
 cache: npm
-script: true
+script: npm build
 deploy:
   provider: npm
   email: qzeqing@gmail.com
