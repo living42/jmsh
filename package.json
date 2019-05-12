@@ -1,6 +1,6 @@
 {
   "name": "jmsh",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Connect servers managed by Jumpserver using traditional terminal",
   "main": "index.js",
   "bin": {
