@@ -39,12 +39,6 @@ export async function login(endpoint: string, username: string, password: string
     fs.rmdirSync(tmpDir)
   }
 
-  const m2 = /<input type="hidden" name="csrfmiddlewaretoken" value="(\w+)">/.exec(resp.data)
-  if (!m2) {
-    console.error('Cannot find csrfmiddlewaretoken.')
-    process.exit(1)
-  }
-
   form.append('csrfmiddlewaretoken', cookieGetValue(http.cookies, endpoint, 'csrftoken'))
 
   const loginResp = await http.post(`${endpoint}/users/login/`, form, { maxRedirects: 0 })
@@ -56,13 +50,8 @@ export async function login(endpoint: string, username: string, password: string
   if (loginResp.headers.location === '/users/login/otp/') {
     const form2 = new URLSearchParams()
 
-    const resp4 = await http.get(`${endpoint}/users/login/otp/`)
-    const m3 = /<input type="hidden" name="csrfmiddlewaretoken" value="(\w+)">/.exec(resp4.data)
-    if (!m3) {
-      console.error('Cannot find csrfmiddlewaretoken.')
-      process.exit(1)
-    }
-    form.append('csrfmiddlewaretoken', cookieGetValue(http.cookies, endpoint, 'csrftoken'))
+    await http.get(`${endpoint}/users/login/otp/`)
+    form2.append('csrfmiddlewaretoken', cookieGetValue(http.cookies, endpoint, 'csrftoken'))
 
     const { otpCode } = await inquirer.prompt({
       name: 'otpCode',
