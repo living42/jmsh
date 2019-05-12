@@ -1,10 +1,10 @@
 {
   "name": "jmsh",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Connect servers managed by Jumpserver using traditional terminal",
   "main": "index.js",
   "bin": {
-    "jmsh": "./dist/cli.js"
+    "jmsh": "./dist/main.js"
   },
   "directories": {
     "test": "test"
@@ -38,8 +38,11 @@
     "@types/socket.io-client": "^1.4.32",
     "@types/uuid-js": "^0.7.2",
     "axios": "^0.18.0",
+    "exit-hook": "^2.2.0",
     "inquirer": "^6.2.2",
+    "inquirer-autocomplete-prompt": "^1.0.1",
     "socket.io-client": "^2.2.0",
     "uuid-js": "^0.7.5"
-  }
+  },
+  "files": ["src", "dist"]
 }
