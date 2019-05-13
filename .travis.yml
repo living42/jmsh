@@ -2,7 +2,10 @@ language: node_js
 node_js:
 - stable
 cache: npm
-script: npm run build
+before_script:
+  - npm run build
+  - npm link
+script: jmsh --help
 deploy:
   provider: npm
   email: qzeqing@gmail.com

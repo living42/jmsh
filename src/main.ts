@@ -19,6 +19,11 @@ interface Config {
 }
 
 export async function main() {
+  if (process.argv.includes('--help')) {
+    console.log('Usage:')
+    console.log('  jmsh [hostname]')
+    process.exit()
+  }
   console.log(`jmsh ${VERSION}`)
   if (process.env.JMSH_AGENT_MODE === '1') {
     agent.startAgent()
