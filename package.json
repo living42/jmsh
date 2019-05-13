@@ -4,7 +4,7 @@
   "description": "Connect servers managed by Jumpserver using traditional terminal",
   "main": "index.js",
   "bin": {
-    "jmsh": "./dist/main.js"
+    "jmsh": "./dist/src/main.js"
   },
   "directories": {
     "test": "test"
@@ -44,5 +44,8 @@
     "socket.io-client": "^2.2.0",
     "uuid-js": "^0.7.5"
   },
-  "files": ["src", "dist"]
+  "files": [
+    "src",
+    "dist"
+  ]
 }

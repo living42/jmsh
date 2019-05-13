@@ -8,8 +8,9 @@ import * as endpoints from './endpoints'
 import * as rpc from './rpc'
 import inquirer from 'inquirer'
 import child_process from 'child_process'
+import pkg from '../package.json'
 
-const VERSION = '1.0.4'
+const VERSION = pkg.version
 
 interface Config {
   endpoint: string
