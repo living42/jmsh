@@ -47,6 +47,7 @@ async function client() {
 
   const sockName = `.jmsh-${os.userInfo().uid}-${VERSION}`
   const sockPath = path.join(os.tmpdir(), `${sockName}.sock`)
+  console.log('sockPath', sockPath)
   if (!fs.existsSync(sockPath)) {
     await spawnAgent(sockPath)
   }

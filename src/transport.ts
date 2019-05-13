@@ -4,9 +4,12 @@ export class Transport {
   sock: Socket
   readingQueue: Queue
 
+  readBuf: Buffer
+
   constructor(sock: Socket) {
     this.sock = sock
     this.readingQueue = new Queue()
+    this.readBuf = Buffer.alloc(0)
 
     sock.on('error', async e => {
       while (this.readingQueue.length > 0) {
@@ -22,15 +25,26 @@ export class Transport {
     })
 
     sock.on('data', async payload => {
-      const data = JSON.parse(payload.toString())
-      const [resolve, _] = await this.readingQueue.pop()
-      resolve(data)
+      this.readBuf = Buffer.concat([this.readBuf, payload])
+
+      const frameLength = this.readBuf.readUInt32BE(0)
+      if (this.readBuf.byteLength + 4 >= frameLength) {
+        const frame = this.readBuf.slice(4, frameLength + 4)
+        this.readBuf = this.readBuf.slice(frameLength + 4)
+        const data = JSON.parse(frame.toString())
+        const [resolve, _] = await this.readingQueue.pop()
+        delete data.pad
+        resolve(data)
+      }
     })
   }
 
   async postMessage(message: any) {
-    const payload = JSON.stringify(message)
-    this.sock.write(payload)
+    const payload = JSON.stringify({ pad: '1'.repeat(10000), ...message })
+    const body = Buffer.from(payload)
+    const header = Buffer.alloc(4)
+    header.writeUInt32BE(body.byteLength, 0)
+    this.sock.write(Buffer.concat([header, body]))
   }
 
   async readMessage(): Promise<any> {
