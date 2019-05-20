@@ -12,7 +12,8 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pkg": "pkg --out-dir bin ."
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
   "devDependencies": {
     "@types/inquirer": "0.0.44",
     "@types/node": "^11.10.4",
+    "pkg": "^4.4.0",
     "typescript": "^3.3.3333"
   },
   "dependencies": {
