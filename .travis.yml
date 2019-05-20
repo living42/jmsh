@@ -14,6 +14,7 @@ deploy:
       secure: n9YIclpl3Lnt+mXKYowYOGZTiHEGcQJw/GyeDZrxv6uIJmXqNPLP0FpS7vKqZKGCIwF6sTKufXjo3IN02tzM4EzEvi2WVZoJQKwGw/qAPfk7dFozQoe+m2AboFLj3RkWgeKnMEvTZZsFitg4PikYLOPSK1LUrA+YqgZrSlQ5M2s9AlV19dd7in9On0whtRNuD8waQpGFTJVYXHiAJbs93i223ReAMujZYxbKW0nw4nvIPsnGGJON4Ii7KAcG687nOE/99Fl5nXic9Obi9ORINKDKKdatNm5mu0kwtAiD/hnv8+B4ly7Xy1qNkfMDtZSauf5Pv1N51LxchwdFUu3BMuWOoUSCZJgQdAt3DGg9Pu8m+D4ApyxChv38vxubGKqVOaTXI6N9P6gKuTCbhBN5TRXL3K/pAe5D1OkbRJpM/22b6rTHPr5kz7ngRoXkf/oBH3SEsb6zwJd11xcLNL5E7a7jUTZGS9cUC3hAQX/IgGt7s9HkXdcze2CBDk0B6l7L2DkCbgiBc62mHdE2i1LA2QwoC6z8FpYmP+CYyW3dgbtHrB6yoCfTiknLUHMjXH/qpb6wT9Zdsj/Xe98ChIQ/pFiMxabgNlsZjWv8KF3IjrPJmnLCDqbQ39Y887gpKVlLMvQMkHgpTD45ppJ+yQbcBzbAYWtPCdGaE2aAP2fTf+g=
     file_glob: true
     file: bin/*
+    skip_cleanup: true
     on:
       tags: true
       repo: living42/jmsh
