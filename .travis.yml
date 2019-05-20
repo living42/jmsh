@@ -9,13 +9,22 @@ script: jmsh --help
 before_deploy:
   - npm run pkg
 deploy:
-  provider: npm
-  email: qzeqing@gmail.com
-  api_key:
-    secure: H77O1kF9brn2ywX7wrKoIurI6Y2EyMX3hUkWJmbA4gkYHoAWzv1EczKPVP+zNnczekLXwFgCDN6T4+ail5gKNjTCvvRD55r7fz81+CJGmf69aunhK6jr9YrcY1PwROh0hAohuQskX1vw8PdjlhWsl5+Wp5CHo6WzLcolfk9VdSii7BM5PabefpC0J1gnUgwdQiKxaeP8Ce4spMEE2ZBlWrKPjdkPGLvrFU67STMstzCISmWgA0C9VGmob+ZVkZEjhI4Ag1kCmmsiKOB/ajWM4sgjSTXKY73ol5BP7JBcaFcG5ePANeI4jBVlEWb1yKXaDJqoqoYdbvVIrNA2VEgth/E+WKiIdW9GTrIPMpXeMe+he7MlLmg6jnNjIZSDQLKCdwq1yoxC/olgzvbDHr2KBEdbFIM7Uroa+kEl/pu8gJqL/53V6U2NG8Zr2HG8OkAV2p4NSoib5oMCN7VXM0JdHjY/WUw1qxH8v5IyDGfXg3Zpin1IN3XvRvQu5oc1cAOoEXFRQcsEmoybogYQRyVckeafRLKDYE+Zfjq75t2ATMyAdZoM1CadplOALLdCxo7cRNMql/o9YqVeR9xqtHhjOFoFnM6eBqqFVW2MB2aH8+J4SvPnC7izY4Y6p0vFIGYr2OBDe6yGC5FxZ51J/6G2lQxyCe/RWlKlVIyXIaT+7L0=
-  skip_cleanup: true
-  file_glob: true
-  file: bin/*
-  on:
-    tags: true
-    repo: living42/jmsh
+  - provider: releases
+    email: qzeqing@gmail.com
+    api_key:
+      secure: H77O1kF9brn2ywX7wrKoIurI6Y2EyMX3hUkWJmbA4gkYHoAWzv1EczKPVP+zNnczekLXwFgCDN6T4+ail5gKNjTCvvRD55r7fz81+CJGmf69aunhK6jr9YrcY1PwROh0hAohuQskX1vw8PdjlhWsl5+Wp5CHo6WzLcolfk9VdSii7BM5PabefpC0J1gnUgwdQiKxaeP8Ce4spMEE2ZBlWrKPjdkPGLvrFU67STMstzCISmWgA0C9VGmob+ZVkZEjhI4Ag1kCmmsiKOB/ajWM4sgjSTXKY73ol5BP7JBcaFcG5ePANeI4jBVlEWb1yKXaDJqoqoYdbvVIrNA2VEgth/E+WKiIdW9GTrIPMpXeMe+he7MlLmg6jnNjIZSDQLKCdwq1yoxC/olgzvbDHr2KBEdbFIM7Uroa+kEl/pu8gJqL/53V6U2NG8Zr2HG8OkAV2p4NSoib5oMCN7VXM0JdHjY/WUw1qxH8v5IyDGfXg3Zpin1IN3XvRvQu5oc1cAOoEXFRQcsEmoybogYQRyVckeafRLKDYE+Zfjq75t2ATMyAdZoM1CadplOALLdCxo7cRNMql/o9YqVeR9xqtHhjOFoFnM6eBqqFVW2MB2aH8+J4SvPnC7izY4Y6p0vFIGYr2OBDe6yGC5FxZ51J/6G2lQxyCe/RWlKlVIyXIaT+7L0=
+    skip_cleanup: true
+    file_glob: true
+    file: bin/*
+    on:
+      tags: true
+      repo: living42/jmsh
+
+  - provider: npm
+    email: qzeqing@gmail.com
+    api_key:
+      secure: H77O1kF9brn2ywX7wrKoIurI6Y2EyMX3hUkWJmbA4gkYHoAWzv1EczKPVP+zNnczekLXwFgCDN6T4+ail5gKNjTCvvRD55r7fz81+CJGmf69aunhK6jr9YrcY1PwROh0hAohuQskX1vw8PdjlhWsl5+Wp5CHo6WzLcolfk9VdSii7BM5PabefpC0J1gnUgwdQiKxaeP8Ce4spMEE2ZBlWrKPjdkPGLvrFU67STMstzCISmWgA0C9VGmob+ZVkZEjhI4Ag1kCmmsiKOB/ajWM4sgjSTXKY73ol5BP7JBcaFcG5ePANeI4jBVlEWb1yKXaDJqoqoYdbvVIrNA2VEgth/E+WKiIdW9GTrIPMpXeMe+he7MlLmg6jnNjIZSDQLKCdwq1yoxC/olgzvbDHr2KBEdbFIM7Uroa+kEl/pu8gJqL/53V6U2NG8Zr2HG8OkAV2p4NSoib5oMCN7VXM0JdHjY/WUw1qxH8v5IyDGfXg3Zpin1IN3XvRvQu5oc1cAOoEXFRQcsEmoybogYQRyVckeafRLKDYE+Zfjq75t2ATMyAdZoM1CadplOALLdCxo7cRNMql/o9YqVeR9xqtHhjOFoFnM6eBqqFVW2MB2aH8+J4SvPnC7izY4Y6p0vFIGYr2OBDe6yGC5FxZ51J/6G2lQxyCe/RWlKlVIyXIaT+7L0=
+    skip_cleanup: true
+    on:
+      tags: true
+      repo: living42/jmsh
