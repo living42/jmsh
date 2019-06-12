@@ -39,7 +39,7 @@
     "@3846masa/axios-cookiejar-support": "^0.4.2",
     "@types/socket.io-client": "^1.4.32",
     "@types/uuid-js": "^0.7.2",
-    "axios": "^0.18.0",
+    "axios": "^0.18.1",
     "exit-hook": "^2.2.0",
     "inquirer": "^6.2.2",
     "inquirer-autocomplete-prompt": "^1.0.1",
