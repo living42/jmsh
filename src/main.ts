@@ -17,7 +17,6 @@ interface Config {
   endpoint: string
   username: string
   configDir: string
-  savePassword: boolean
 }
 
 export async function main() {
@@ -165,7 +164,8 @@ async function askLogin(client: rpc.Client, config: Config) {
 
   let savedPassword
 
-  if (config.savePassword) {
+
+  if (os.platform() === 'darwin') {
     savedPassword = await findPasswordInKeyChain(config)
   }
 
@@ -175,14 +175,23 @@ async function askLogin(client: rpc.Client, config: Config) {
     default: savedPassword,
     message: `password for [${config.username}]`
   })
-  if (config.savePassword && password !== savedPassword) {
-    await addPasswordToKeyChain(config, password)
-    console.log("password saved into KeyChain")
-  }
 
   const credential = await login(config.endpoint, config.username, password)
 
   await endpoints.createConnection.call({ endpoint: config.endpoint, username: config.username, ...credential }, client)
+
+  if (os.platform() === 'darwin' && password !== savedPassword) {
+    const { confirm } = await inquirer.prompt<{ confirm: boolean }>({
+      "name": "confirm",
+      "type": "confirm",
+      "default": true,
+      "message": "save your password into KeyChain?"
+    })
+    if (confirm) {
+      await addPasswordToKeyChain(config, password)
+      console.log("password saved into KeyChain")
+    }
+  }
 }
 
 async function findPasswordInKeyChain(config: Config): Promise<string | null> {
@@ -223,16 +232,7 @@ async function setup(configPath: string) {
     },
   ]
 
-  if (os.platform() === 'darwin') {
-    questions.push({
-      name: 'savePassword',
-      type: 'confirm',
-      default: true,
-      message: 'Save your password into KeyChain?'
-    })
-  }
-
-  const config = await inquirer.prompt<{ endpoint: string; username: string, savePassword: boolean }>(questions)
+  const config = await inquirer.prompt<{ endpoint: string; username: string }>(questions)
   console.log(`Save your config to ${configPath}`)
   if (!fs.existsSync(path.dirname(configPath))) {
     fs.mkdirSync(path.dirname(configPath), { recursive: true })
