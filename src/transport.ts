@@ -2,24 +2,27 @@ import { Socket } from 'net'
 
 export class Transport {
   sock: Socket
-  readingQueue: Queue
+  readWaiters: Queue
 
   readBuf: Buffer
 
+  buffer: any[]
+
   constructor(sock: Socket) {
     this.sock = sock
-    this.readingQueue = new Queue()
+    this.readWaiters = new Queue()
     this.readBuf = Buffer.alloc(0)
+    this.buffer = []
 
     sock.on('error', async e => {
-      while (this.readingQueue.length > 0) {
-        const [_, reject] = await this.readingQueue.pop()
+      while (this.readWaiters.length > 0) {
+        const [_, reject] = await this.readWaiters.pop()
         reject(e)
       }
     })
     sock.on('end', async () => {
-      while (this.readingQueue.length > 0) {
-        const [_, reject] = await this.readingQueue.pop()
+      while (this.readWaiters.length > 0) {
+        const [_, reject] = await this.readWaiters.pop()
         reject(new TransportEndError())
       }
     })
@@ -27,20 +30,37 @@ export class Transport {
     sock.on('data', async payload => {
       this.readBuf = Buffer.concat([this.readBuf, payload])
 
-      const frameLength = this.readBuf.readUInt32BE(0)
-      if (this.readBuf.byteLength + 4 >= frameLength) {
+      while (this.readBuf.byteLength >= 4) {
+        const frameLength = this.readBuf.readUInt32BE(0)
         const frame = this.readBuf.slice(4, frameLength + 4)
-        this.readBuf = this.readBuf.slice(frameLength + 4)
-        const data = JSON.parse(frame.toString())
-        const [resolve, _] = await this.readingQueue.pop()
-        delete data.pad
-        resolve(data)
+
+        if (frame.byteLength == frameLength) {
+          this.readBuf = this.readBuf.slice(frameLength + 4)
+          let data
+          try {
+            data = JSON.parse(frame.toString())
+          } catch (e) {
+            console.debug('payload', payload.toString())
+            console.debug('readBuf:', this.readBuf.toString())
+            console.debug("frameLength:", frameLength)
+            console.debug('data:', frame.toString())
+            console.debug('dataLength:', frame.byteLength)
+            throw e
+          }
+          this.buffer.push(data)
+          const [resolve, _] = await this.readWaiters.pop()
+          if (resolve) {
+            resolve()
+          }
+        } else {
+          break
+        }
       }
     })
   }
 
   async postMessage(message: any) {
-    const payload = JSON.stringify({ pad: '1'.repeat(10000), ...message })
+    const payload = JSON.stringify({ ...message })
     const body = Buffer.from(payload)
     const header = Buffer.alloc(4)
     header.writeUInt32BE(body.byteLength, 0)
@@ -48,9 +68,14 @@ export class Transport {
   }
 
   async readMessage(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.readingQueue.put([resolve, reject])
-    })
+    while (true) {
+      if (this.buffer.length > 0) {
+        return this.buffer.shift()
+      }
+      await new Promise((resolve, reject) => {
+        this.readWaiters.put([resolve, reject])
+      })
+    }
   }
 
   close() {
@@ -58,7 +83,7 @@ export class Transport {
   }
 }
 
-export class TransportEndError extends Error {}
+export class TransportEndError extends Error { }
 
 class Queue {
   _waiters: (() => void)[]
