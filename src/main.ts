@@ -169,11 +169,16 @@ async function askLogin(client: rpc.Client, config: Config) {
     savedPassword = await findPasswordInKeyChain(config)
   }
 
+  let message = `password for [${config.username}]`
+  if (savedPassword) {
+    message = `password for [${config.username}] (leave empty to use saved password)`
+  }
+
   const { password } = await inquirer.prompt<{ password: string }>({
     name: 'password',
     type: 'password',
     default: savedPassword,
-    message: `password for [${config.username}]`
+    message: message,
   })
 
   const credential = await login(config.endpoint, config.username, password)
