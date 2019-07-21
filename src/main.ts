@@ -163,23 +163,21 @@ async function askLogin(client: rpc.Client, config: Config) {
     config.username = username
   }
 
-  let password
+  let savedPassword
 
   if (config.savePassword) {
-    password = await findPasswordInKeyChain(config)
+    savedPassword = await findPasswordInKeyChain(config)
   }
 
-  if (!password) {
-    const answer = await inquirer.prompt<{ password: string }>({
-      name: 'password',
-      type: 'password',
-      message: `password for [${config.username}]`
-    })
-    password = answer.password
-    if (config.savePassword) {
-      await addPasswordToKeyChain(config, password)
-      console.log("password saved into KeyChain")
-    }
+  const { password } = await inquirer.prompt<{ password: string }>({
+    name: 'password',
+    type: 'password',
+    default: savedPassword,
+    message: `password for [${config.username}]`
+  })
+  if (config.savePassword && password !== savedPassword) {
+    await addPasswordToKeyChain(config, password)
+    console.log("password saved into KeyChain")
   }
 
   const credential = await login(config.endpoint, config.username, password)
