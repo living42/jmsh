@@ -1,4 +1,5 @@
 {
-    "endpoint": "http://localhost:8080",
-    "username": "admin"
+ "endpoint": "http://localhost:8080",
+ "username": "admin",
+ "savePassword": true
 }

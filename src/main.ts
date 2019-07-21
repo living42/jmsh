@@ -9,6 +9,7 @@ import * as rpc from './rpc'
 import inquirer from 'inquirer'
 import child_process from 'child_process'
 import pkg from '../package.json'
+import { URL } from 'url';
 
 const VERSION = pkg.version
 
@@ -16,6 +17,7 @@ interface Config {
   endpoint: string
   username: string
   configDir: string
+  savePassword: boolean
 }
 
 export async function main() {
@@ -160,38 +162,84 @@ async function askLogin(client: rpc.Client, config: Config) {
     })
     config.username = username
   }
-  const { password } = await inquirer.prompt<{ password: string }>({
-    name: 'password',
-    type: 'password',
-    message: `password for [${config.username}]`
-  })
+
+  let password
+
+  if (config.savePassword) {
+    password = await findPasswordInKeyChain(config)
+  }
+
+  if (!password) {
+    const answer = await inquirer.prompt<{ password: string }>({
+      name: 'password',
+      type: 'password',
+      message: `password for [${config.username}]`
+    })
+    password = answer.password
+    if (config.savePassword) {
+      await addPasswordToKeyChain(config, password)
+      console.log("password saved into KeyChain")
+    }
+  }
 
   const credential = await login(config.endpoint, config.username, password)
 
   await endpoints.createConnection.call({ endpoint: config.endpoint, username: config.username, ...credential }, client)
 }
 
+async function findPasswordInKeyChain(config: Config): Promise<string | null> {
+  const host = new URL(config.endpoint).host
+  const r = child_process.spawnSync("security", ["find-generic-password", "-a", `${config.username}@${host}`, "-c", "jmsh", "-s", 'jmsh account', "-gw"])
+  if (r.status.toString() === '0') {
+    return r.stdout.toString().trim()
+  }
+  if (r.status.toString() === '44') {
+    return null
+  }
+  throw new Error(r.stderr.toString())
+}
+
+async function addPasswordToKeyChain(config: Config, password: string) {
+  const host = new URL(config.endpoint).host
+  const r = child_process.spawnSync("security", ["add-generic-password", "-a", `${config.username}@${host}`, "-c", "jmsh", "-C", "jmsh", "-D", 'Jumpserver account for jmsh', "-s", 'jmsh account', "-w", password, "-U"])
+  if (r.status.toString() === '0') {
+    return
+  }
+  throw new Error(r.stderr.toString())
+}
+
 function needSetup(configPath: string) {
-  return !fs.existsSync(configPath)
+  return !fs.existsSync(configPath) || process.argv.includes('--force-setup')
 }
 
 async function setup(configPath: string) {
   console.log("Let's setup your endpoint.")
 
-  const { endpoint, username } = await inquirer.prompt<{ endpoint: string; username: string }>([
+  const questions: any[] = [
     {
       name: 'endpoint',
       default: 'http://localhost:8080'
     },
     {
       name: 'username'
-    }
-  ])
+    },
+  ]
+
+  if (os.platform() === 'darwin') {
+    questions.push({
+      name: 'savePassword',
+      type: 'confirm',
+      default: true,
+      message: 'Save your password into KeyChain?'
+    })
+  }
+
+  const config = await inquirer.prompt<{ endpoint: string; username: string, savePassword: boolean }>(questions)
   console.log(`Save your config to ${configPath}`)
   if (!fs.existsSync(path.dirname(configPath))) {
     fs.mkdirSync(path.dirname(configPath), { recursive: true })
   }
-  fs.writeFileSync(configPath, JSON.stringify({ endpoint, username }, undefined, ' ') + '\n')
+  fs.writeFileSync(configPath, JSON.stringify(config, undefined, ' ') + '\n')
 }
 
 async function spawnAgent(sockPath: string) {
