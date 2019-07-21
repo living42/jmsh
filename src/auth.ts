@@ -24,12 +24,15 @@ export async function login(endpoint: string, username: string, password: string
       form.append('captcha_0', captchaId)
     }
     const url = m1[1]
-    const resp2 = await http.get(`${endpoint}${url}`, { responseType: 'stream' })
+    const resp2 = await http.get(`${endpoint}${url}`, { responseType: 'arraybuffer' })
     const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jmsh'))
     const filePath = `${tmpDir}/1.png`
-    resp2.data.pipe(fs.createWriteStream(filePath))
+    fs.writeFileSync(filePath, resp2.data)
 
     console.log(`Captcha founded, please interpret it: file://${filePath}`)
+    if (process.env.TERM_PROGRAM = 'iTerm.app') {
+      imgCat(filePath)
+    }
     const { captcha } = await inquirer.prompt({
       name: 'captcha'
     })
@@ -79,4 +82,12 @@ function cookieGetValue(jar: CookieJar, currentUrl: string, name: string) {
   } else {
     throw new Error(`${name} not found`)
   }
+}
+
+function imgCat(path: string) {
+  const inScreen = /^screen.*$/.exec(process.env.TERM || '') !== null
+  const OSC = inScreen ? '\x1bPtmux;\x1b\x1b]' : '\x1b]'
+  const ST = inScreen ? '\x07\x1b\\' : '\x07'
+  const content = fs.readFileSync(path).toString('base64')
+  console.log(`${OSC}1337;File=name=1.png;height=2;inline=1:${content}${ST}`)
 }
