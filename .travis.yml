@@ -1,13 +1,12 @@
 language: node_js
 node_js:
-- stable
+- lts/*
 cache: npm
 before_script:
   - npm run build
   - npm link
-script: jmsh --help
-before_deploy:
   - npm run pkg
+script: jmsh --help
 deploy:
   - provider: releases
     api_key:
