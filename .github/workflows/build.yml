@@ -26,7 +26,7 @@ jobs:
     - run: npm link
     - run: jmsh --help
 
-    - if: contains('tags', github.ref)
+    - if: contains(github.ref, 'tags')
       uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
