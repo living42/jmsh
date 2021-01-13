@@ -1,7 +1,5 @@
 # jmsh
 
-[![Build Status](https://travis-ci.org/living42/jmsh.svg?branch=master)](https://travis-ci.org/living42/jmsh)
-
 Connect servers managed by [Jumpserver](https://github.com/jumpserver/jumpserver) using traditional terminal.
 
 ## How to use it
