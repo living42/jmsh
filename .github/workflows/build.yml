@@ -17,8 +17,14 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 14.x
+
     - run: npm ci
     - run: npm run build
     - run: npm run pkg
     - run: npm link
     - run: jmsh --help
+
+    - if: github.event == 'release'
+      uses: JS-DevTools/npm-publish@v1
+      with:
+        token: ${{ secrets.NPM_TOKEN }}
