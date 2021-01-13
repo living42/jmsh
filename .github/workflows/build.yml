@@ -32,8 +32,8 @@ jobs:
         token: ${{ secrets.NPM_TOKEN }}
 
     - if: contains(github.ref, 'tags')
-      uses: uses: fnkr/github-action-ghr@v1.3
+      uses: fnkr/github-action-ghr@v1.3
       env:
-        GHR_COMPRESS: gz 
+        GHR_COMPRESS: gz
         GHR_PATH: bin/
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
