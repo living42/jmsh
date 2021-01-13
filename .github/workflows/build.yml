@@ -30,3 +30,11 @@ jobs:
       uses: JS-DevTools/npm-publish@v1
       with:
         token: ${{ secrets.NPM_TOKEN }}
+
+    - if: contains(github.ref, 'tags')
+      uses: marvinpinto/action-automatic-releases@v1.1.0
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          bin/*
