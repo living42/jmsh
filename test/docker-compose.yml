@@ -1,9 +1,9 @@
 version: '3'
 services:
   jms:
-    image: jumpserver/jms_all:1.4.7
+    image: jumpserver/jms_all:v2.7.1
     ports:
-      - 127.0.0.1:8080:80
+      - 8080:80
     env_file:
       - ./data/env
     networks:
